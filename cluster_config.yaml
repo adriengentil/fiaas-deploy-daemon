@@ -1,0 +1,21 @@
+ingress-suffix:
+  - "delivery-dev.ingress.prod01.cre-pro.schibsted.io"
+additional_annotations:
+  ingress:
+    "nginx.ingress.kubernetes.io/whitelist-source-range": "10.0.0.0/24,172.10.0.1"
+additional_labels:
+  pod:
+    team: majauts
+    owner: ij
+    sla: 8x5
+    env: pre
+  deployment:
+    team: majauts
+    owner: ij
+    sla: 8x5
+    env: pre
+  ingress:
+    team: majauts
+    owner: ij
+    sla: 8x5
+    env: pre

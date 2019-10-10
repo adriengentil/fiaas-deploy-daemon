@@ -37,6 +37,8 @@ class IngressDeployer(object):
         self._ingress_suffixes = config.ingress_suffixes
         self._host_rewrite_rules = config.host_rewrite_rules
         self._ingress_tls = ingress_tls
+        self._ingress_annotations = config.search_extra({}, 'additional_annotations', 'ingress')
+        self._ingress_labels = config.search_extra({}, 'additional_labels', 'ingress')
 
     def deploy(self, app_spec, labels):
         if self._should_have_ingress(app_spec):
@@ -58,8 +60,12 @@ class IngressDeployer(object):
             u"fiaas/expose": u"true" if _has_explicitly_set_host(app_spec) else u"false"
         }
 
-        custom_labels = merge_dicts(app_spec.labels.ingress, labels)
-        custom_annotations = merge_dicts(app_spec.annotations.ingress, annotations)
+        custom_labels = merge_dicts(app_spec.labels.ingress,
+                                    self._ingress_labels,
+                                    labels)
+        custom_annotations = merge_dicts(app_spec.annotations.ingress,
+                                         self._ingress_annotations,
+                                         annotations)
         metadata = ObjectMeta(name=app_spec.name, namespace=app_spec.namespace, labels=custom_labels,
                               annotations=custom_annotations)
 

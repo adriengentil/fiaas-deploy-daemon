@@ -1,0 +1,23 @@
+apiVersion: fiaas.schibsted.io/v1
+kind: Application
+metadata:
+  labels:
+    app: example
+    fiaas/deployment_id: test
+  name: example
+  namespace: default
+spec:
+  application: example
+  image: nginx:1.13.0
+  config:
+    version: 3
+    host: example.com
+    prometheus:
+      enabled: false
+    resources:
+      limits:
+        memory: 128M
+        cpu: 200m
+      requests:
+        memory: 64M
+        cpu: 100m

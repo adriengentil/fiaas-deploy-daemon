@@ -22,8 +22,9 @@ from argparse import Namespace
 import configargparse
 import dns.exception
 import dns.resolver
+import yaml
 
-DEFAULT_CONFIG_FILE = "/var/run/config/fiaas/cluster_config.yaml"
+DEFAULT_CONFIG_FILE = os.getenv("FIAAS_DEFAULT_CONFIG_FILE", "/var/run/config/fiaas/cluster_config.yaml")
 DEFAULT_SECRETS_DIR = "/var/run/secrets/fiaas/"
 
 INGRESS_SUFFIX_LONG_HELP = """
@@ -213,6 +214,27 @@ class Configuration(Namespace):
         list_group.add_argument("--whitelist", help="Only deploy this application", action="append", default=[])
         parser.parse_args(args, namespace=self)
         self.global_env = {env_var.key: env_var.value for env_var in self.global_env}
+
+        self._parse_yaml_config()
+
+    def search_extra(self, default_value=None, *path):
+        result = self.extra
+        for key in path:
+            if key in result and isinstance(result, dict):
+                result = result[key]
+            else:
+                return default_value
+
+        return result
+
+    def _parse_yaml_config(self):
+        try:
+            with open(DEFAULT_CONFIG_FILE, 'r') as yaml_file:
+                self.extra = yaml.safe_load(yaml_file)
+        except IOError as e:
+            self._logger.warn('cannot open {}'.format(DEFAULT_CONFIG_FILE))
+        except yaml.YAMLError as e:
+            self._logger.warn('yaml parsing of {} failed with {}'.format(DEFAULT_CONFIG_FILE, e))
 
     def _resolve_api_config(self):
         token_file = "/var/run/secrets/kubernetes.io/serviceaccount/token"
